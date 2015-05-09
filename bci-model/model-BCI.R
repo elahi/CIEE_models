@@ -85,8 +85,7 @@ rawmetric = subset(results, metric %in% c("Richness", "Hshannon", "Hsimpson", "b
 ggplot(rawmetric, aes(scale,value, group=stress)) + geom_boxplot() + facet_wrap(~metric) + theme_bw()
 
 
-# FIXME
-#Code to make the triangle plots. 
+# TODO : Code to make the triangle plots. 
 Tri_div2 = subset(results, metric %in% c("Richness", "Hshannon", "Hsimpson"))
 
 #The Tri_div2 data frame has the three measures of diversity, route, and time. 

@@ -25,6 +25,10 @@ gridplot.main = function(ctfs.dat,size,cc,plotsize=c(1000,500)) {
   splist=unique(sp)
   nsp=length(splist)		# no of species
   
+  sptable = sort(table(ctfs.dat$sp))
+  Nmin = sptable[[1]]                 # number of individuals of the least abundant species
+  Nmax = sptable[[length(sptable)]]   # number of individuals of the most abundant species
+  
   x=ctfs.dat$gx
   y=ctfs.dat$gy
   
@@ -34,18 +38,20 @@ gridplot.main = function(ctfs.dat,size,cc,plotsize=c(1000,500)) {
   nxcell=xmax/size		# no of cells along x-axis
   nycell=ymax/size		# no of cells along y-axis
   
-  ntree.dat=data.frame(abund=rep(-99,nxcell*nycell))
+  ntree.dat=data.frame(abund=rep(-99, nxcell*nycell))
   
   #
   for (i in 1:nsp) {
     
+    #identify xy coordinates for a given species
     xx=x[sp==splist[i]]
     yy=y[sp==splist[i]]
     
     xy.dat=data.frame(x=xx,y=yy)
     
     xy0.dat=reduce.fn(xy.dat,cc)		# random removal
-    #  xy0.dat=reduce2.fn(xy.dat,cc)	# aggregated removal from left to right side of the plot #TODO: Need to bias removal by abundance (e.g. common vs. rare)
+    #  xy0.dat=reduce2.fn(xy.dat,cc)	# aggregated removal from left to right side of the plot 
+    #TODO: Need to bias removal by abundance (e.g. common vs. rare). Need to know abundance of Nmin and Nmax
     
     x0=xy0.dat$x
     y0=xy0.dat$y

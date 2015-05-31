@@ -185,3 +185,52 @@ reduce2.fn = function(xy.dat,cc){
   }
   return(data.frame(x=x,y=y))
 }
+
+reducerare.fn = function(xy.dat, cc, Nmin){
+  # biased removal of c proportion of trees, reducing RARE species more
+  # c=0.8 (critically endangered)
+  # c=0.5 (endangered)
+  # c=0.2 (vulnerable)
+  
+  abund=length(xy.dat$x)
+  
+  if(abund<5) {
+    x=runif(1,0,1000)
+    y=runif(1,0,500)
+  }
+  
+  else{
+    cc.mod = cc * (Nmin/abund)  #TODO: CHECK THAT THIS IS CORRECT
+    ntree=round((1-cc.mod)*abund)    # reduce cc number of trees, where rare species are more affected
+    iseq=sample(1:abund,ntree)		# randomly sample ntree from sequence 1:abund
+    
+    x=xy.dat$x[iseq]
+    y=xy.dat$y[iseq]
+  }
+  return(data.frame(x=x,y=y))
+}
+
+reducecommon.fn = function(xy.dat,cc, Nmax){
+  # biased removal of c proportion of trees, reducing RARE species more
+  # c=0.8 (critically endangered)
+  # c=0.5 (endangered)
+  # c=0.2 (vulnerable)
+  
+  abund=length(xy.dat$x)
+  
+  if(abund<5) {
+    x=runif(1,0,1000)
+    y=runif(1,0,500)
+  }
+  
+  else{
+    cc.mod = cc * (abund/Nmax)  #TODO: CHECK THAT THIS IS CORRECT
+    ntree=round((1-cc.mod)*abund)    # reduce cc number of trees, where rare species are more affected
+    iseq=sample(1:abund,ntree)  	# randomly sample ntree from sequence 1:abund
+    
+    x=xy.dat$x[iseq]
+    y=xy.dat$y[iseq]
+  }
+  return(data.frame(x=x,y=y))
+}
+

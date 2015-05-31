@@ -4,8 +4,10 @@
 # Model simulation for UBC working group on Biodiversity Change, 4-7 May 2015
 
 # The folder contains several files for replicating the results of UBC manuscript
-#   1. model-BCI.R       : Runs the code and outputs the main results and figures (e.g. Figure 5 for UBC manuscript)
-#   2. gridplot.main.R   : Reduces BCI trees based on a random or biased reduction algorithm, using IUCN population reduction levels (0, 0.3, 0.5, 0.8)
+#   1. model-BCI.R       : Runs the code and outputs the main results and figures 
+#                         (e.g. Figure 5 for UBC manuscript)
+#   2. gridplot.main.R   : Reduces BCI trees based on a random or biased reduction algorithm, 
+#                         using IUCN population reduction levels (0, 0.3, 0.5, 0.8)
 #                          outputs a site by species matrix for abundance
 #   3. divmetrics.main.R : Calculates diversity metrics and effect sizes from gridplot.main.R output (S, H, D, Bray-Curtis) 
 #   4. BCI-model-fxns.R  : Contains additional functions for running the main scripts for analysis
@@ -35,75 +37,72 @@ source('divmetrics.main.R')
 size = c(10, 25, 50, 100) #main plots to focus on 25 and 100
 cc = c(0, 0.3, 0.5, 0.8) #main plots to focus on 0.5 and 0.8
 
-for (s in size){
+for (s in 1:length(size)){
   #TODO:
   # this will need to be fine-tuned to calculate abundance reduction in 3 different ways.
   # right now gridplot.main just does random reduction (reduce.fn)
   # we should reparameterize it so that it can do the reduction in 3 different ways (random, common, rare)
   # I think the current reduce2.fn works on spatial aggregation, but what we want is reduction on common vs. rare species biased proportionally
-    ntree.dat1 = gridplot.main(bci82.dat, s, cc[1], plotsize=c(1000,500))
-    ntree.dat2 = gridplot.main(bci82.dat, s, cc[2], plotsize=c(1000,500))
-    ntree.dat3 = gridplot.main(bci82.dat, s, cc[3], plotsize=c(1000,500))
-    ntree.dat4 = gridplot.main(bci82.dat, s, cc[4], plotsize=c(1000,500))
+   # TODO: make this section flexible so it can handle different lenghts of cc (to do so, divmetrics.main would also need to be modified)
+    ntree.dat1 = gridplot.main(bci82.dat, size[s], cc[1], plotsize=c(1000,500))
+    ntree.dat2 = gridplot.main(bci82.dat, size[s], cc[2], plotsize=c(1000,500))
+    ntree.dat3 = gridplot.main(bci82.dat, size[s], cc[3], plotsize=c(1000,500))
+    ntree.dat4 = gridplot.main(bci82.dat, size[s], cc[4], plotsize=c(1000,500))
     
-    scale = divmetrics.main(ntree.dat1, ntree.dat2, ntree.dat3, ntree.dat4,s)
+    scale = divmetrics.main(ntree.dat1, ntree.dat2, ntree.dat3, ntree.dat4, size[s])
   
-  if(s = 1){
+  if(s == 1){
     raw = scale[[1]]
     effect = scale[[2]]
   }
-  if (s>1){
+  if (s > 1){
     raw = rbind(raw, scale[[1]])
-    effect = rbind(effec, scale[[2]])
+    effect = rbind(effect, scale[[2]])
   }
 }
 
-#TODO: make a melted version of the dataframe for plotting
-metric.melt = melt(metric, id.vars="stress")
-names(metric.melt) = c("stress", "metric", "value")
-fx.melt = melt(scale, id.vars=c("stress", "scale"))
-names(fx.melt) = c("stress", "metric", "value")
 
-vals = rbind(fx.melt, metric.melt)
+raw$scale = as.factor(raw$scale)
+raw$stress = as.factor(raw$stress)
+effect$scale = as.factor(effect$scale)
+effect$stress = as.factor(effect$stress)
 
-# TODO : plot results for Figure 5 in UBC manuscript
-#        the dataframe scale should hold all the necessary data, but will need to be subsetted to plot the values you want for the results
-#        We want several panels for Figure 5 and for supplementary figures in the appendix:
+# make a melted version of the dataframe for plotting
+raw.melt = melt(raw, id.vars=c("stress", "scale"))
+  names(raw.melt) = c("stress", "scale", "metric", "value")
+effect.melt = melt(effect, id.vars=c("stress", "scale"))
+  names(effect.melt) = c("stress", "scale", "metric", "value")
+
+# Plot results for Figure 5 in UBC manuscript
+#  the dataframe scale should hold all the necessary data, but will need to be subsetted to plot the values you want for the results
+#  We want several panels for Figure 5 and for supplementary figures in the appendix:
 #            There are three plots in a row (for Richness, Shannon Diversity, and Simpson's)
 #                  and two rows (for absolute change in metric and LRR effect size)
 #            x-axis is scale (we discussed just using size = c(25, 100) for the main fig)
 #            y-axis is either abolute difference or effect size (use 0.5 and/or 0.8 for the main fig)
 #            data in the figure is grouped by the three reduction scenarios (random, common-biased, & rare-biased removal)
 
-results$scale = as.factor(results$scale)
-results$stress = as.factor(results$stress)
-
-absdiff = subset(results, metric %in% c("rich.abs","Hshannon.abs", "Hsimpson.abs"))
-p1 = ggplot(absdiff, aes(scale,value, group=stress)) + geom_boxplot() + facet_wrap(~metric, scales="free") + theme_bw() +
+absdiff = subset(effect.melt, metric %in% c("rich.abs","Hshannon.abs", "Hsimpson.abs"))
+p1 = ggplot(absdiff, aes(scale,value, group=interaction(scale, stress))) + geom_boxplot(aes(fill=stress)) + facet_wrap(~metric, scales="free") + theme_bw() +
   ylab("absolute difference")
-
-effectsize = subset(results, metric %in% c("rich.es", "Hshannon.es", "Hsimpson.es"))
-p2 = ggplot(effectsize, aes(scale,value, group=stress)) + geom_boxplot() + facet_wrap(~metric) + theme_bw() + 
+effectsize = subset(effect.melt, metric %in% c("rich.es", "Hshannon.es", "Hsimpson.es"))
+p2 = ggplot(effectsize, aes(scale,value, group=interaction(scale,stress))) + geom_boxplot(aes(fill=stress)) + facet_wrap(~metric) + theme_bw() + 
   ylab("LRR Effect Size")
 
 grid.arrange(p1, p2)
 
+# Plot the raw measures for Richness, Shannon, Simpson, and Bray-Curtis
+bcmetric = subset(effect.melt, metric %in% c("bc"))
+raw.melt2 = rbind(raw.melt, bcmetric)
+ggplot(raw.melt2, aes(scale,value, group=interaction(scale,stress))) + geom_boxplot(aes(fill=stress)) + facet_wrap(~metric, scales="free") + theme_bw()
 
-rawmetric = subset(results, metric %in% c("Richness", "Hshannon", "Hsimpson", "bc"))
-ggplot(rawmetric, aes(scale,value, group=stress)) + geom_boxplot() + facet_wrap(~metric, scales="free") + theme_bw()
-
-
-# TODO : Code to make the triangle plots. 
-results_hill = subset(rawmetric, metric %in% c("Richness", "Hshannon", "Hsimpson"))
-Tri_div2 = cast(results_hill, scale + stress~metric, mean)
-
-#The Tri_div2 data frame has the three measures of diversity, route, and time. 
-#TODO: Out dataset does not have columns for Route or Time - fix so the plotting code can work.
-#TODO : Look up ggtern package, ask PT for advice!
-ggtern(Tri_div2, aes(x=Richness, y=Hshannon, z=Hsimpson, group=stress, color=scale)) +
-  geom_point(size = 4) +
+#
+# # Code to make the triangle plots. 
+#The data frame for making the Triangle plot has the three measures of diversity, route (stress), and time (scale). 
+ggtern(raw, aes(x=Richness, y=Hshannon, z=Hsimpson, group=stress, color=scale)) +
+  geom_point() +
   tern_limits(T=.6,L=0.8,R=0.5) +
-  theme_bw(base_size = 16) +
+  theme_bw(base_size = 16) + 
   scale_color_brewer(type = "qual",palette = 6)
 
 

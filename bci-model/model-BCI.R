@@ -1,4 +1,4 @@
-# This script is for exploring Fangliang's analytical model, based on BCI tree data
+# This script is for exploring Fangliang He's analytical model, based on BCI tree data
 # Code written by Fangliang He, based on He and Legendre 2002 and He 2012
 # Code modified by Sarah Supp and Robin Elahi
 # Model simulation for UBC working group on Biodiversity Change, 4-7 May 2015
@@ -15,13 +15,14 @@
 #Load FH RData, which contains the dataset to model on (bci82.dat) and all the functions (which I've since put into the R scripts so we can see and modify them as needed)
 # Please do not edit the RData file, it contains FH code and data, but we should work on a script to replicate the analyses
 # TODO: Save just bci82.dat out as a small datafile to load here, instead of the whole RData file (which isn't needed)
-load('DiversityMetrics.RData')
+load('/Users/sarah/Documents/GitHub/CIEE_models/bci-model/DiversityMetrics.RData')
 
 # Load packages and source functions
 library(ggplot2)
 library(ggtern)
 library(reshape)
 library(reshape2)
+library(gridExtra)
 
 source('BCI-model-fxns.R')
 source('gridplot.main.R')
@@ -72,29 +73,32 @@ dev.off()
 results$scale = as.factor(results$scale)
 results$stress = as.factor(results$stress)
 
-absdiff = subset(results, metric %in% c("rich.abs", "Hshannon.abs", "Hsimpson.abs"))
-ggplot(absdiff, aes(scale,value, group=stress)) + geom_boxplot() + facet_wrap(~metric) + theme_bw() +
+absdiff = subset(results, metric %in% c("rich.abs","Hshannon.abs", "Hsimpson.abs"))
+p1 = ggplot(absdiff, aes(scale,value, group=stress)) + geom_boxplot() + facet_wrap(~metric, scales="free") + theme_bw() +
   ylab("absolute difference")
-#plot these on different scales for clarity
 
 effectsize = subset(results, metric %in% c("rich.es", "Hshannon.es", "Hsimpson.es"))
-ggplot(effectsize, aes(scale,value, group=stress)) + geom_boxplot() + facet_wrap(~metric) + theme_bw() + 
+p2 = ggplot(effectsize, aes(scale,value, group=stress)) + geom_boxplot() + facet_wrap(~metric) + theme_bw() + 
   ylab("LRR Effect Size")
 
+grid.arrange(p1, p2)
+
+
 rawmetric = subset(results, metric %in% c("Richness", "Hshannon", "Hsimpson", "bc"))
-ggplot(rawmetric, aes(scale,value, group=stress)) + geom_boxplot() + facet_wrap(~metric) + theme_bw()
+ggplot(rawmetric, aes(scale,value, group=stress)) + geom_boxplot() + facet_wrap(~metric, scales="free") + theme_bw()
 
 
 # TODO : Code to make the triangle plots. 
-Tri_div2 = subset(results, metric %in% c("Richness", "Hshannon", "Hsimpson"))
+results_hill = subset(rawmetric, metric %in% c("Richness", "Hshannon", "Hsimpson"))
+Tri_div2 = cast(results_hill, scale + stress~metric, mean)
 
 #The Tri_div2 data frame has the three measures of diversity, route, and time. 
 #TODO: Out dataset does not have columns for Route or Time - fix so the plotting code can work.
 #TODO : Look up ggtern package, ask PT for advice!
-ggtern(Tri_div2, aes(x=Richness, y=Hshannon, z=Hsimpson, group=Route, color=Time))+
-  geom_point()+
-  tern_limits(T=.6,L=0.8,R=0.5)+
-  theme_bw(base_size = 16)+
+ggtern(Tri_div2, aes(x=Richness, y=Hshannon, z=Hsimpson, group=stress, color=scale)) +
+  geom_point(size = 4) +
+  tern_limits(T=.6,L=0.8,R=0.5) +
+  theme_bw(base_size = 16) +
   scale_color_brewer(type = "qual",palette = 6)
 
 

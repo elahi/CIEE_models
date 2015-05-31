@@ -45,7 +45,7 @@ gridplot.main = function(ctfs.dat,size,cc,plotsize=c(1000,500)) {
     xy.dat=data.frame(x=xx,y=yy)
     
     xy0.dat=reduce.fn(xy.dat,cc)		# random removal
-    #  xy0.dat=reduce2.fn(xy.dat,cc)	# aggregated removal from left to right side of the plot
+    #  xy0.dat=reduce2.fn(xy.dat,cc)	# aggregated removal from left to right side of the plot #TODO: Need to bias removal by abundance (e.g. common vs. rare)
     
     x0=xy0.dat$x
     y0=xy0.dat$y

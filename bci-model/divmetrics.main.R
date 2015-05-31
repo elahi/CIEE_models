@@ -85,9 +85,9 @@ divmetrics.main = function(data0,data03,data05,data08) {
   names(metric.melt) = c("stress", "metric", "value")
   
   fx = data.frame(stress=c(rep(0.3,ncell),rep(0.5,ncell),rep(0.8,ncell)),
-                           rich.abs=c(rich00-rich03,rich00-rich05,rich00-rich08),
-                           Hshannon.abs=c(Hshannon00-Hshannon03,Hshannon00-Hshannon05,Hshannon00-Hshannon08),
-                           Hsimpson.abs=c(Hsimpson00-Hsimpson03,Hsimpson00-Hsimpson05,Hsimpson00-Hsimpson08),
+                           rich.abs=c(rich03-rich00,rich05-rich00,rich08-rich00),
+                           Hshannon.abs=c(Hshannon03-Hshannon00,Hshannon05-Hshannon00,Hshannon08-Hshannon00),
+                           Hsimpson.abs=c(Hsimpson03-Hsimpson00,Hsimpson05-Hsimpson00,Hsimpson08-Hsimpson00),
                            bc=c(bc03,bc05,bc08),
                            rich.es=c(log(rich03/rich00),log(rich05/rich00),log(rich08/rich00)),
                            Hshannon.es=c(log(Hshannon03/Hshannon00),log(Hshannon05/Hshannon00),log(Hshannon08/Hshannon00)),

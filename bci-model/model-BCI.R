@@ -32,8 +32,8 @@ source('divmetrics.main.R')
 
 # Model BCI plots with different levels of disturbance, where disturbance is random removal of individual trees
 # set parameters
-size = c(10, 25, 50, 100)
-cc = c(0, 0.3, 0.5, 0.8)
+size = c(10, 25, 50, 100) #main plots to focus on 25 and 100
+cc = c(0, 0.3, 0.5, 0.8) #main plots to focus on 0.5 and 0.8
 
 for (s in size){
   #TODO:
@@ -46,17 +46,25 @@ for (s in size){
     ntree.dat3 = gridplot.main(bci82.dat, s, cc[3], plotsize=c(1000,500))
     ntree.dat4 = gridplot.main(bci82.dat, s, cc[4], plotsize=c(1000,500))
     
-    scale = divmetrics.main(ntree.dat1, ntree.dat2, ntree.dat3, ntree.dat4)
+    scale = divmetrics.main(ntree.dat1, ntree.dat2, ntree.dat3, ntree.dat4,s)
   
   if(s = 1){
-    scale$scale = s
-    results = scale
+    raw = scale[[1]]
+    effect = scale[[2]]
   }
   if (s>1){
-    scale$scale = s
-    results = rbind(results, scale)
+    raw = rbind(raw, scale[[1]])
+    effect = rbind(effec, scale[[2]])
   }
 }
+
+#TODO: make a melted version of the dataframe for plotting
+metric.melt = melt(metric, id.vars="stress")
+names(metric.melt) = c("stress", "metric", "value")
+fx.melt = melt(scale, id.vars=c("stress", "scale"))
+names(fx.melt) = c("stress", "metric", "value")
+
+vals = rbind(fx.melt, metric.melt)
 
 # TODO : plot results for Figure 5 in UBC manuscript
 #        the dataframe scale should hold all the necessary data, but will need to be subsetted to plot the values you want for the results
@@ -64,11 +72,8 @@ for (s in size){
 #            There are three plots in a row (for Richness, Shannon Diversity, and Simpson's)
 #                  and two rows (for absolute change in metric and LRR effect size)
 #            x-axis is scale (we discussed just using size = c(25, 100) for the main fig)
-#            y-axis is either abolute difference or effect size
+#            y-axis is either abolute difference or effect size (use 0.5 and/or 0.8 for the main fig)
 #            data in the figure is grouped by the three reduction scenarios (random, common-biased, & rare-biased removal)
-
-#TODO: Track where a plot window is getting turned on in previous code. Need to turn the device off to use ggplot below
-dev.off()
 
 results$scale = as.factor(results$scale)
 results$stress = as.factor(results$stress)

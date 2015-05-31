@@ -2,7 +2,7 @@
 # modified by Sarah Supp, from Fangliang He, based on He and Legendre 20002, and He 2012
 # May 4-7, 2015
 
-divmetrics.main = function(data0,data03,data05,data08) {
+divmetrics.main = function(data0,data03,data05,data08,s) {
   # calculate diversity change using: 
   # log SR, log Shannon, log Simpson, slope SR, slope abundance, slope Shannon, slope Simpson, 
   # Jaccard, Bray-Curtis
@@ -76,15 +76,13 @@ divmetrics.main = function(data0,data03,data05,data08) {
   }
   
   #dataframe with everything
-  metric = data.frame(stress=c(rep(0,ncell),rep(0.3,ncell),rep(0.5,ncell),rep(0.8,ncell)),
+  metric = data.frame(scale=rep(s,ncell*4), stress=c(rep(0,ncell),rep(0.3,ncell),rep(0.5,ncell),rep(0.8,ncell)),
                                Richness=c(rich00, rich03, rich05, rich08),
                                Hshannon=c(Hshannon00,Hshannon03,Hshannon05,Hshannon08),
                                Hsimpson=c(Hsimpson00,Hsimpson03,Hsimpson05,Hsimpson08))
+
   
-  metric.melt = melt(metric, id.vars="stress")
-  names(metric.melt) = c("stress", "metric", "value")
-  
-  fx = data.frame(stress=c(rep(0.3,ncell),rep(0.5,ncell),rep(0.8,ncell)),
+  fx = data.frame(scale = rep(s,ncell*3), stress=c(rep(0.3,ncell),rep(0.5,ncell),rep(0.8,ncell)),
                            rich.abs=c(rich03-rich00,rich05-rich00,rich08-rich00),
                            Hshannon.abs=c(Hshannon03-Hshannon00,Hshannon05-Hshannon00,Hshannon08-Hshannon00),
                            Hsimpson.abs=c(Hsimpson03-Hsimpson00,Hsimpson05-Hsimpson00,Hsimpson08-Hsimpson00),
@@ -93,12 +91,7 @@ divmetrics.main = function(data0,data03,data05,data08) {
                            Hshannon.es=c(log(Hshannon03/Hshannon00),log(Hshannon05/Hshannon00),log(Hshannon08/Hshannon00)),
                            Hsimpson.es=c(log(Hsimpson03/Hsimpson00),log(Hsimpson05/Hsimpson00),log(Hsimpson08/Hsimpson00)))
   
-  fx.melt = melt(fx, id.vars="stress")
-  names(fx.melt) = c("stress", "metric", "value")
-  
-  vals = rbind(fx.melt, metric.melt)
-  
-  return(vals)
+  return(list(metric,fx))
 }
   
 

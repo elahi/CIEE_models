@@ -9,8 +9,10 @@ gridplot.main = function(ctfs.dat,size,cc,plotsize=c(1000,500)) {
   # This program is based on the program used to calculate IUCN Ecology 2012 paper
   # the reduction of population size is cc = 0.8 (critically endangered), 0.5 (endangered) and 0.3 (vulnerable)
   #
-  # The program has two reduce.fn. One is "reduce.fn" which randomly removes trees
-  # The second program is "reduce2.fn" which is "aggregated removal"
+  # The program has three reduce.fn. One is "reduce.fn" which randomly removes trees
+  # The second program is "reducerare.fn" which aggressively removes rare trees
+  # The third program is "reducecommon.fn" which aggressively removes common trees
+  # A fourth program "reduce2.fn" which is aggregated removal, is not used in this application
   # 
   # ctfs.dat - BCI stem mapping plot data, e.g., "bci82.dat" which is the 1982 census data after removing all the NAs from "bci.full1".
   # size   - lattice size in meters, that is scale
@@ -38,9 +40,11 @@ gridplot.main = function(ctfs.dat,size,cc,plotsize=c(1000,500)) {
   nxcell=xmax/size		# no of cells along x-axis
   nycell=ymax/size		# no of cells along y-axis
   
-  ntree.dat=data.frame(abund=rep(-99, nxcell*nycell))
+  ntree.rand=data.frame(abund=rep(-99, nxcell*nycell))
+  ntree.rare=data.frame(abund=rep(-99, nxcell*nycell))
+  ntree.common=data.frame(abund=rep(-99, nxcell*nycell))
   
-  #
+  # Loop through all the species
   for (i in 1:nsp) {
     
     #identify xy coordinates for a given species
@@ -48,28 +52,20 @@ gridplot.main = function(ctfs.dat,size,cc,plotsize=c(1000,500)) {
     yy=y[sp==splist[i]]
     
     xy.dat=data.frame(x=xx,y=yy)
-    
-    xy0.dat=reduce.fn(xy.dat,cc)		# random removal
-    #  xy0.dat=reduce2.fn(xy.dat,cc)	# aggregated removal from left to right side of the plot 
-    #TODO: Need to bias removal by abundance (e.g. common vs. rare). Need to know abundance of Nmin and Nmax
-    
-    x0=xy0.dat$x
-    y0=xy0.dat$y
-    
-    abund[i]=length(x0)
-    
-    plotxy.fn(x0,y0,xmax,ymax)
-    
-    # call program presence.fn which converts the points into presence/absence data
-    zz=presence.fn(size,nxcell,nycell,x0,y0,abund[i],xmax,ymax)
-    
+
+    # Remove trees 1) randomly, 2) biased against rare species, and 3) biased against common species
+    xy0.rand=reduce.fn(xy.dat, cc)		# random removal
+    xy0.rar=reducerare.fn(xy.dat, cc, Nmin)    # rare removal
+    xy0.com=reducecommon.fn(xy.dat, cc, Nmax)  # common removal
+
+    ntree.rand=reduced.ntree(i, xy0.rand, ntree.rand)
+    ntree.rare=reduced.ntree(i, xy0.rar, ntree.rare)
+    ntree.common=reduced.ntree(i, xy0.com, ntree.common)
     
     print(i)
-    noccup[i]=zz$noccup		# no of occupied cells
-    ntree.dat=data.frame(ntree.dat,ntree=zz$npt)
   }
   
-  return(ntree.dat)
+  return(list("rand"=ntree.rand, "rare"=ntree.rare, "common"=ntree.common))
   # return(data.frame(abund=abund,occup=noccup*size*size))
 }
 

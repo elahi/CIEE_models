@@ -234,3 +234,21 @@ reducecommon.fn = function(xy.dat,cc, Nmax){
   return(data.frame(x=x,y=y))
 }
 
+# function to finish reduce step in gridplot.main.R, returns the ntree dataframe
+reduced.ntree = function(i, xy0.dat, ntree.dat){
+  x0=xy0.dat$x
+  y0=xy0.dat$y
+  
+  abund[i]=length(x0)
+  
+  #plot the data for the species after reduction
+  plotxy.fn(x0,y0,xmax,ymax)
+  
+  # call program presence.fn which converts the points into presence/absence data
+  zz=presence.fn(size,nxcell,nycell,x0,y0,abund[i],xmax,ymax)
+  
+  noccup[i]=zz$noccup  	# no of occupied cells  #TODO: NEED THIS FOR PLOTTING SARS?
+  ntree.dat=data.frame(ntree.dat,ntree=zz$npt)
+  
+  return(ntree.dat)
+}

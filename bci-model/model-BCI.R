@@ -38,26 +38,36 @@ size = c(10, 25, 50, 100) #main plots to focus on 25 and 100
 cc = c(0, 0.3, 0.5, 0.8) #main plots to focus on 0.5 and 0.8
 
 for (s in 1:length(size)){
-  #TODO:
-  # this will need to be fine-tuned to calculate abundance reduction in 3 different ways.
-  # right now gridplot.main just does random reduction (reduce.fn)
-  # we should reparameterize it so that it can do the reduction in 3 different ways (random, common, rare)
-  # I think the current reduce2.fn works on spatial aggregation, but what we want is reduction on common vs. rare species biased proportionally
+  # Calculate abundance reduction in 3 different ways:
+  # 1) random reduction
+  # 2) rare-biased reduction
+  # 3) common-biased reduction
    # TODO: make this section flexible so it can handle different lenghts of cc (to do so, divmetrics.main would also need to be modified)
     ntree.dat1 = gridplot.main(bci82.dat, size[s], cc[1], plotsize=c(1000,500))
     ntree.dat2 = gridplot.main(bci82.dat, size[s], cc[2], plotsize=c(1000,500))
     ntree.dat3 = gridplot.main(bci82.dat, size[s], cc[3], plotsize=c(1000,500))
     ntree.dat4 = gridplot.main(bci82.dat, size[s], cc[4], plotsize=c(1000,500))
     
-    scale = divmetrics.main(ntree.dat1, ntree.dat2, ntree.dat3, ntree.dat4, size[s])
+    # calculate diversity metrics for the three scenarios
+    scale.rand = divmetrics.main(ntree.dat1[[1]], ntree.dat2[[1]], ntree.dat3[[1]], ntree.dat4[[1]], size[s])
+    scale.rare = divmetrics.main(ntree.dat1[[2]], ntree.dat2[[2]], ntree.dat3[[2]], ntree.dat4[[2]], size[s])
+    scale.comm = divmetrics.main(ntree.dat1[[3]], ntree.dat2[[3]], ntree.dat3[[3]], ntree.dat4[[3]], size[s])
   
+    # add tags for removal scenario
+    scale.rand[[1]]$removal = rep("random", nrow(scale.rand[[1]]))
+    scale.rand[[2]]$removal = rep("random", nrow(scale.rand[[1]]))
+    scale.rare[[1]]$removal = rep("rare", nrow(scale.rare[[1]]))
+    scale.rare[[1]]$removal = rep("rare", nrow(scale.rare[[1]]))
+    scale.comm[[1]]$removal = rep("common", nrow(scale.comm[[1]]))
+    scale.comm[[1]]$removal = rep("common", nrow(scale.comm[[1]]))
+    
   if(s == 1){
-    raw = scale[[1]]
-    effect = scale[[2]]
+    raw = rbind(scale.rand[[1]], scale.rare[[1]], scale.comm[[1]])
+    effect = rbind(scale.rand[[2]], scale.rare[[2]], scale.comm[[2]])
   }
   if (s > 1){
-    raw = rbind(raw, scale[[1]])
-    effect = rbind(effect, scale[[2]])
+    raw = rbind(raw, scale.rand[[1]], scale.rare[[1]], scale.comm[[1]])
+    effect = rbind(effect, scale.rand[[2]], scale.rare[[2]], scale.comm[[2]])
   }
 }
 

@@ -55,11 +55,13 @@ for (s in 1:length(size)){
   
     # add tags for removal scenario
     scale.rand[[1]]$removal = rep("random", nrow(scale.rand[[1]]))
-    scale.rand[[2]]$removal = rep("random", nrow(scale.rand[[1]]))
+    scale.rand[[2]]$removal = rep("random", nrow(scale.rand[[2]]))
+    
     scale.rare[[1]]$removal = rep("rare", nrow(scale.rare[[1]]))
-    scale.rare[[1]]$removal = rep("rare", nrow(scale.rare[[1]]))
+    scale.rare[[2]]$removal = rep("rare", nrow(scale.rare[[2]]))
+    
     scale.comm[[1]]$removal = rep("common", nrow(scale.comm[[1]]))
-    scale.comm[[1]]$removal = rep("common", nrow(scale.comm[[1]]))
+    scale.comm[[2]]$removal = rep("common", nrow(scale.comm[[2]]))
     
   if(s == 1){
     raw = rbind(scale.rand[[1]], scale.rare[[1]], scale.comm[[1]])
@@ -71,17 +73,19 @@ for (s in 1:length(size)){
   }
 }
 
-
+# convert values to factors
 raw$scale = as.factor(raw$scale)
 raw$stress = as.factor(raw$stress)
+raw$removal = as.factor(raw$removal)
 effect$scale = as.factor(effect$scale)
 effect$stress = as.factor(effect$stress)
+effect$removal = as.factor(effect$removal)
 
 # make a melted version of the dataframe for plotting
-raw.melt = melt(raw, id.vars=c("stress", "scale"))
-  names(raw.melt) = c("stress", "scale", "metric", "value")
-effect.melt = melt(effect, id.vars=c("stress", "scale"))
-  names(effect.melt) = c("stress", "scale", "metric", "value")
+raw.melt = melt(raw, id.vars=c("stress", "scale", "removal"))
+  names(raw.melt) = c("stress", "scale", "removal", "metric", "value")
+effect.melt = melt(effect, id.vars=c("stress", "scale", "removal"))
+  names(effect.melt) = c("stress", "scale", "removal", "metric", "value")
 
 # Plot results for Figure 5 in UBC manuscript
 #  the dataframe scale should hold all the necessary data, but will need to be subsetted to plot the values you want for the results
@@ -92,27 +96,36 @@ effect.melt = melt(effect, id.vars=c("stress", "scale"))
 #            y-axis is either abolute difference or effect size (use 0.5 and/or 0.8 for the main fig)
 #            data in the figure is grouped by the three reduction scenarios (random, common-biased, & rare-biased removal)
 
-absdiff = subset(effect.melt, metric %in% c("rich.abs","Hshannon.abs", "Hsimpson.abs"))
-p1 = ggplot(absdiff, aes(scale,value, group=interaction(scale, stress))) + geom_boxplot(aes(fill=stress)) + facet_wrap(~metric, scales="free") + theme_bw() +
+absdiff = subset(effect.melt, metric %in% c("rich.abs","Hshannon.abs", "Hsimpson.abs") & stress == 0.8)
+p1 = ggplot(absdiff, aes(scale,value, group=interaction(scale, removal))) + geom_boxplot(aes(fill=removal)) + facet_wrap(~metric, scales="free") + theme_bw() +
   ylab("absolute difference")
 effectsize = subset(effect.melt, metric %in% c("rich.es", "Hshannon.es", "Hsimpson.es"))
-p2 = ggplot(effectsize, aes(scale,value, group=interaction(scale,stress))) + geom_boxplot(aes(fill=stress)) + facet_wrap(~metric) + theme_bw() + 
+p2 = ggplot(effectsize, aes(scale,value, group=interaction(scale, removal))) + geom_boxplot(aes(fill=removal)) + facet_wrap(~metric) + theme_bw() + 
   ylab("LRR Effect Size")
-
 grid.arrange(p1, p2)
+
 
 # Plot the raw measures for Richness, Shannon, Simpson, and Bray-Curtis
 bcmetric = subset(effect.melt, metric %in% c("bc"))
 raw.melt2 = rbind(raw.melt, bcmetric)
-ggplot(raw.melt2, aes(scale,value, group=interaction(scale,stress))) + geom_boxplot(aes(fill=stress)) + facet_wrap(~metric, scales="free") + theme_bw()
+ggplot(raw.melt2, aes(scale,value, group=interaction(scale,removal))) + geom_boxplot(aes(fill=removal)) + facet_wrap(~metric, scales="free") + theme_bw()
 
 #
 # # Code to make the triangle plots. 
 #The data frame for making the Triangle plot has the three measures of diversity, route (stress), and time (scale). 
-ggtern(raw, aes(x=Richness, y=Hshannon, z=Hsimpson, group=stress, color=scale)) +
-  geom_point() +
-  tern_limits(T=.6,L=0.8,R=0.5) +
+raw2 = subset(raw, stress==c(0,0.8))
+ggtern(raw2, aes(x=Richness, y=Hshannon, z=Hsimpson, group=scale, color=removal)) +
+  geom_point(aes(shape=stress), size=4, alpha=0.5) +
+  tern_limits(T=.4,L=0.95,R=0.4) +
   theme_bw(base_size = 16) + 
   scale_color_brewer(type = "qual",palette = 6)
+
+#The data frame for making the Triangle plot has the three measures of diversity, route (stress), and time (scale). 
+# effectLRR = effect[effect$stress==0.8,c(1,2,10,7,8,9)]
+# ggtern(effectLRR, aes(x=rich.es, y=Hshannon.es, z=Hsimpson.es, group=scale, color=removal)) +
+#   geom_point() +
+#   tern_limits(T=.8,L=0.9,R=0.8) +
+#   theme_bw(base_size = 16) + 
+#   scale_color_brewer(type = "qual",palette = 6)
 
 

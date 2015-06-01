@@ -10,6 +10,11 @@ divmetrics.main = function(data0,data03,data05,data08,s) {
   require(reshape)
   require(reshape2)
   
+  Abundance00=numeric()
+  Abundance03=numeric()
+  Abundance05=numeric()
+  Abundance08=numeric()
+  
   rich00=numeric()
   rich03=numeric()
   rich05=numeric()
@@ -44,7 +49,13 @@ divmetrics.main = function(data0,data03,data05,data08,s) {
     sp05=data05[i,]
     sp08=data08[i,]
     
-    # richness effect size
+    #Abundance
+    Abundance00[i]=sum(sp00)
+    Abundance03[i]=sum(sp00)
+    Abundance05[i]=sum(sp00)
+    Abundance06[i]=sum(sp00)
+    
+    # Richness
     rich00[i]=length(sp00[sp00>0])
     rich03[i]=length(sp03[sp03>0])
     rich05[i]=length(sp05[sp05>0])
@@ -77,16 +88,19 @@ divmetrics.main = function(data0,data03,data05,data08,s) {
   
   #dataframe with everything
   metric = data.frame(scale=rep(s,ncell*4), stress=c(rep(0,ncell),rep(0.3,ncell),rep(0.5,ncell),rep(0.8,ncell)),
+                               Abundance=c(Abundance00, Abundance03, Abundance05, Abundance08),
                                Richness=c(rich00, rich03, rich05, rich08),
                                Hshannon=c(Hshannon00,Hshannon03,Hshannon05,Hshannon08),
                                Hsimpson=c(Hsimpson00,Hsimpson03,Hsimpson05,Hsimpson08))
 
   
   fx = data.frame(scale = rep(s,ncell*3), stress=c(rep(0.3,ncell),rep(0.5,ncell),rep(0.8,ncell)),
+                           abund.abs=c(Abundance03-Abundance00, Abundance05-Abundance00, Abundance08-Abundance00),
                            rich.abs=c(rich03-rich00,rich05-rich00,rich08-rich00),
                            Hshannon.abs=c(Hshannon03-Hshannon00,Hshannon05-Hshannon00,Hshannon08-Hshannon00),
                            Hsimpson.abs=c(Hsimpson03-Hsimpson00,Hsimpson05-Hsimpson00,Hsimpson08-Hsimpson00),
                            bc=c(bc03,bc05,bc08),
+                           abund.es=c(log(Abundance03/Abundance00), log(Abundance05/Abundance00), log(Abundance08/Abundance00)),
                            rich.es=c(log(rich03/rich00),log(rich05/rich00),log(rich08/rich00)),
                            Hshannon.es=c(log(Hshannon03/Hshannon00),log(Hshannon05/Hshannon00),log(Hshannon08/Hshannon00)),
                            Hsimpson.es=c(log(Hsimpson03/Hsimpson00),log(Hsimpson05/Hsimpson00),log(Hsimpson08/Hsimpson00)))

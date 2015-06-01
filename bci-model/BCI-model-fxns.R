@@ -187,6 +187,7 @@ reduce2.fn = function(xy.dat,cc){
 }
 
 reducerare.fn = function(xy.dat, cc, Nmin){
+  #FIXME: ISN'T WORKING RIGHT. CASES WHERE ABUNDANCE INCREASES?
   # biased removal of c proportion of trees, reducing RARE species more
   # c=0.8 (critically endangered)
   # c=0.5 (endangered)
@@ -200,7 +201,7 @@ reducerare.fn = function(xy.dat, cc, Nmin){
   }
   
   else{
-    cc.mod = cc * (Nmin/abund)  #TODO: CHECK THAT THIS IS CORRECT
+    cc.mod = cc * (Nmin/abund)  #TODO: CHECK THAT THIS IS CORRECT, exp needed?
     ntree=round((1-cc.mod)*abund)    # reduce cc number of trees, where rare species are more affected
     iseq=sample(1:abund,ntree)		# randomly sample ntree from sequence 1:abund
     
@@ -211,6 +212,7 @@ reducerare.fn = function(xy.dat, cc, Nmin){
 }
 
 reducecommon.fn = function(xy.dat,cc, Nmax){
+  #FIXME: ISN'T WORKING RIGHT. CASES WHERE ABUNDANCE INCREASES?
   # biased removal of c proportion of trees, reducing RARE species more
   # c=0.8 (critically endangered)
   # c=0.5 (endangered)
@@ -224,7 +226,7 @@ reducecommon.fn = function(xy.dat,cc, Nmax){
   }
   
   else{
-    cc.mod = cc * (abund/Nmax)  #TODO: CHECK THAT THIS IS CORRECT
+    cc.mod = cc * (abund/Nmax)  #TODO: CHECK THAT THIS IS CORRECT, exp needed?
     ntree=round((1-cc.mod)*abund)    # reduce cc number of trees, where rare species are more affected
     iseq=sample(1:abund,ntree)  	# randomly sample ntree from sequence 1:abund
     

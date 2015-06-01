@@ -96,19 +96,19 @@ effect.melt = melt(effect, id.vars=c("stress", "scale", "removal"))
 #            y-axis is either abolute difference or effect size (use 0.5 and/or 0.8 for the main fig)
 #            data in the figure is grouped by the three reduction scenarios (random, common-biased, & rare-biased removal)
 
-absdiff = subset(effect.melt, metric %in% c("rich.abs","Hshannon.abs", "Hsimpson.abs") & stress == 0.8)
-p1 = ggplot(absdiff, aes(scale,value, group=interaction(scale, removal))) + geom_boxplot(aes(fill=removal)) + facet_wrap(~metric, scales="free") + theme_bw() +
+absdiff = subset(effect.melt, metric %in% c("rich.abs","Hshannon.abs", "Hsimpson.abs") & stress %in% c(0.3, 0.8))
+p1 = ggplot(absdiff, aes(scale,value, group=interaction(scale, removal, stress))) + geom_boxplot(aes(fill=removal)) + facet_wrap(~metric, scales="free") + theme_bw() +
   ylab("absolute difference")
-effectsize = subset(effect.melt, metric %in% c("rich.es", "Hshannon.es", "Hsimpson.es"))
-p2 = ggplot(effectsize, aes(scale,value, group=interaction(scale, removal))) + geom_boxplot(aes(fill=removal)) + facet_wrap(~metric) + theme_bw() + 
+effectsize = subset(effect.melt, metric %in% c("rich.es", "Hshannon.es", "Hsimpson.es") & stress %in% c(0.3, 0.8))
+p2 = ggplot(effectsize, aes(scale,value, group=interaction(scale, removal, stress))) + geom_boxplot(aes(fill=removal)) + facet_wrap(~metric) + theme_bw() + 
   ylab("LRR Effect Size")
 grid.arrange(p1, p2)
 
 
 # Plot the raw measures for Richness, Shannon, Simpson, and Bray-Curtis
-bcmetric = subset(effect.melt, metric %in% c("bc"))
+bcmetric = subset(effect.melt, metric %in% c("bc") & stress %in% c(0.3, 0.8))
 raw.melt2 = rbind(raw.melt, bcmetric)
-ggplot(raw.melt2, aes(scale,value, group=interaction(scale,removal))) + geom_boxplot(aes(fill=removal)) + facet_wrap(~metric, scales="free") + theme_bw()
+ggplot(raw.melt2, aes(scale,value, group=interaction(scale, stress, removal))) + geom_boxplot(aes(fill=removal)) + facet_wrap(~metric, scales="free") + theme_bw()
 
 #
 # # Code to make the triangle plots. 

@@ -4,8 +4,8 @@
 
 divmetrics.main = function(data0,data03,data05,data08,s) {
   # calculate diversity change using: 
-  # log SR, log Shannon, log Simpson, slope SR, slope abundance, slope Shannon, slope Simpson, 
-  # Jaccard, Bray-Curtis
+  # log Richness, log Shannon, log Simpson, slope Richness, slope abundance, slope Shannon, slope Simpson, 
+  # Jaccard, Bray-Curtis, 
   
   require(reshape)
   require(reshape2)

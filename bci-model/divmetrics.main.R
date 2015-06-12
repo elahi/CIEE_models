@@ -2,7 +2,7 @@
 # modified by Sarah Supp, from Fangliang He, based on He and Legendre 20002, and He 2012
 # May 4-7, 2015
 
-divmetrics.main = function(data0,data03,data05,data08,s) {
+divmetrics.main = function(data0, data03, data05, data08, s) {
   # calculate diversity change using: 
   # log Richness, log Shannon, log Simpson, slope Richness, slope abundance, slope Shannon, slope Simpson, 
   # Jaccard, Bray-Curtis, 
@@ -51,9 +51,9 @@ divmetrics.main = function(data0,data03,data05,data08,s) {
     
     #Abundance
     Abundance00[i]=sum(sp00)
-    Abundance03[i]=sum(sp00)
-    Abundance05[i]=sum(sp00)
-    Abundance06[i]=sum(sp00)
+    Abundance03[i]=sum(sp03)
+    Abundance05[i]=sum(sp05)
+    Abundance08[i]=sum(sp08)
     
     # Richness
     rich00[i]=length(sp00[sp00>0])

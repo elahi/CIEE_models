@@ -18,11 +18,7 @@ gridplot.main = function(ctfs.dat,size,cc,plotsize=c(1000,500)) {
   # size   - lattice size in meters, that is scale
   # cc - reduction of population size
   # this is main program for reading species x, y coordinates for each species
-  
-  
-  abund=numeric()    # no of individuals of species
-  noccup=numeric()		# no of occupied cells for a species
-  
+    
   sp=ctfs.dat$sp
   splist=unique(sp)
   nsp=length(splist)		# no of species
@@ -34,15 +30,16 @@ gridplot.main = function(ctfs.dat,size,cc,plotsize=c(1000,500)) {
   x=ctfs.dat$gx
   y=ctfs.dat$gy
   
-  xmax=1000
+  xmax=1000 # xy coordinates from bci trees
   ymax=500
   
   nxcell=xmax/size		# no of cells along x-axis
   nycell=ymax/size		# no of cells along y-axis
   
-  ntree.rand=data.frame(abund=rep(-99, nxcell*nycell))
-  ntree.rare=data.frame(abund=rep(-99, nxcell*nycell))
-  ntree.common=data.frame(abund=rep(-99, nxcell*nycell))
+  # Build up lists to hold the dataframes for abundance and vector for occupancy
+  ntree.rand=list("ntree"=data.frame(abund=rep(-99, nxcell*nycell)), "noccup"=numeric(), "abund"=numeric())
+  ntree.rare=list("ntree"=data.frame(abund=rep(-99, nxcell*nycell)), "noccup"=numeric(), "abund"=numeric())
+  ntree.common=list("ntree"=data.frame(abund=rep(-99, nxcell*nycell)), "noccup"=numeric(), "abund"=numeric())
   
   # Loop through all the species
   for (i in 1:nsp) {
@@ -55,16 +52,17 @@ gridplot.main = function(ctfs.dat,size,cc,plotsize=c(1000,500)) {
 
     # Remove trees 1) randomly, 2) biased against rare species, and 3) biased against common species
     xy0.rand=reduce.fn(xy.dat, cc)		# random removal
-    xy0.rar=reducerare.fn(xy.dat, cc, Nmin)    # rare removal
-    xy0.com=reducecommon.fn(xy.dat, cc, Nmax)  # common removal
-
-    ntree.rand=reduced.ntree(i, xy0.rand, ntree.rand)
-    ntree.rare=reduced.ntree(i, xy0.rar, ntree.rare)
-    ntree.common=reduced.ntree(i, xy0.com, ntree.common)
+    xy0.rar=reducerare.fn(xy.dat, cc, Nmin, theta=0.5)    # rare removal
+    xy0.com=reducecommon.fn(xy.dat, cc, Nmax, theta=0.5)  # common removal
+    
+    ntree.rand=reduced.ntree(i, xy0.rand, ntree.rand, abund, xmax, ymax, nxcell, nycell)
+    ntree.rare=reduced.ntree(i, xy0.rar, ntree.rare, abund, xmax, ymax, nxcell, nycell)
+    ntree.common=reduced.ntree(i, xy0.com, ntree.common, abund, xmax, ymax, nxcell, nycell)
     
     print(i)
   }
   
+    
   return(list("rand"=ntree.rand, "rare"=ntree.rare, "common"=ntree.common))
   # return(data.frame(abund=abund,occup=noccup*size*size))
 }

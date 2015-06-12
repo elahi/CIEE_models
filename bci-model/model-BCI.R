@@ -1,6 +1,6 @@
 # This script is for exploring Fangliang He's analytical model, based on BCI tree data
 # Code written by Fangliang He, based on He and Legendre 2002 and He 2012
-# Code modified by Sarah Supp and Robin Elahi
+# Code modified by Sarah Supp
 # Model simulation for UBC working group on Biodiversity Change, 4-7 May 2015
 
 # The folder contains several files for replicating the results of UBC manuscript
@@ -34,7 +34,7 @@ source('divmetrics.main.R')
 
 # Model BCI plots with different levels of disturbance, where disturbance is random removal of individual trees
 # set parameters
-size = c(10, 25, 50, 100) #main plots to focus on 25 and 100
+size = c(25,100) #main plots to focus on 25 and 100, could also include 10 and 50
 cc = c(0, 0.3, 0.5, 0.8) #main plots to focus on 0.5 and 0.8
 
 for (s in 1:length(size)){
@@ -43,15 +43,20 @@ for (s in 1:length(size)){
   # 2) rare-biased reduction
   # 3) common-biased reduction
    # TODO: make this section flexible so it can handle different lenghts of cc (to do so, divmetrics.main would also need to be modified)
+    #returns a list of lists holding an ntree dataframe for each scenario and an occupancy vector
     ntree.dat1 = gridplot.main(bci82.dat, size[s], cc[1], plotsize=c(1000,500))
     ntree.dat2 = gridplot.main(bci82.dat, size[s], cc[2], plotsize=c(1000,500))
     ntree.dat3 = gridplot.main(bci82.dat, size[s], cc[3], plotsize=c(1000,500))
     ntree.dat4 = gridplot.main(bci82.dat, size[s], cc[4], plotsize=c(1000,500))
     
+    #plot effect of abundance reduction on species
+    #FIXME: Ideally, this should be an apply statement that inputs from the scenarios, and labels each panel
+    SAR.occup.r(ntree.dat1$rand$abund, ntree.dat1$rand$noccup) #TODO
+    
     # calculate diversity metrics for the three scenarios
-    scale.rand = divmetrics.main(ntree.dat1[[1]], ntree.dat2[[1]], ntree.dat3[[1]], ntree.dat4[[1]], size[s])
-    scale.rare = divmetrics.main(ntree.dat1[[2]], ntree.dat2[[2]], ntree.dat3[[2]], ntree.dat4[[2]], size[s])
-    scale.comm = divmetrics.main(ntree.dat1[[3]], ntree.dat2[[3]], ntree.dat3[[3]], ntree.dat4[[3]], size[s])
+    scale.rand = divmetrics.main(ntree.dat1[[1]][1], ntree.dat2[[1]][1], ntree.dat3[[1]][1], ntree.dat4[[1]][1], size[s])
+    scale.rare = divmetrics.main(ntree.dat1[[2]][1], ntree.dat2[[2]][1], ntree.dat3[[2]][1], ntree.dat4[[2]][1], size[s])
+    scale.comm = divmetrics.main(ntree.dat1[[3]][1], ntree.dat2[[3]][1], ntree.dat3[[3]][1], ntree.dat4[[3]][1], size[s])
   
     # add tags for removal scenario
     scale.rand[[1]]$removal = rep("random", nrow(scale.rand[[1]]))
@@ -76,10 +81,10 @@ for (s in 1:length(size)){
 # convert values to factors
 raw$scale = as.factor(raw$scale)
 raw$stress = as.factor(raw$stress)
-raw$removal = as.factor(raw$removal)
+raw$removal = factor(raw$removal, levels=c("random", "common", "rare"))
 effect$scale = as.factor(effect$scale)
 effect$stress = as.factor(effect$stress)
-effect$removal = as.factor(effect$removal)
+effect$removal = factor(effect$removal, levels=c("random", "common", "rare"))
 
 # make a melted version of the dataframe for plotting
 raw.melt = melt(raw, id.vars=c("stress", "scale", "removal"))
@@ -96,27 +101,29 @@ effect.melt = melt(effect, id.vars=c("stress", "scale", "removal"))
 #            y-axis is either abolute difference or effect size (use 0.5 and/or 0.8 for the main fig)
 #            data in the figure is grouped by the three reduction scenarios (random, common-biased, & rare-biased removal)
 
-absdiff = subset(effect.melt, metric %in% c("rich.abs","Hshannon.abs", "Hsimpson.abs") & stress %in% c(0.3, 0.8))
+absdiff = subset(effect.melt, metric %in% c("rich.abs","Hshannon.abs", "Hsimpson.abs") & stress %in% c(0.5))
 p1 = ggplot(absdiff, aes(scale,value, group=interaction(scale, removal, stress))) + geom_boxplot(aes(fill=removal)) + facet_wrap(~metric, scales="free") + theme_bw() +
   ylab("absolute difference")
-effectsize = subset(effect.melt, metric %in% c("rich.es", "Hshannon.es", "Hsimpson.es") & stress %in% c(0.3, 0.8))
+effectsize = subset(effect.melt, metric %in% c("rich.es", "Hshannon.es", "Hsimpson.es") & stress %in% c(0.5))
 p2 = ggplot(effectsize, aes(scale,value, group=interaction(scale, removal, stress))) + geom_boxplot(aes(fill=removal)) + facet_wrap(~metric) + theme_bw() + 
   ylab("LRR Effect Size")
 grid.arrange(p1, p2)
 
 
 # Plot the raw measures for Richness, Shannon, Simpson, and Bray-Curtis
-bcmetric = subset(effect.melt, metric %in% c("bc") & stress %in% c(0.3, 0.8))
+bcmetric = subset(effect.melt, metric %in% c("bc") & stress %in% c(0, 0.5))
 raw.melt2 = rbind(raw.melt, bcmetric)
+raw.melt2 = subset(raw.melt, stress %in% c(0, 0.5))
 ggplot(raw.melt2, aes(scale,value, group=interaction(scale, stress, removal))) + geom_boxplot(aes(fill=removal)) + facet_wrap(~metric, scales="free") + theme_bw()
 
 #
 # # Code to make the triangle plots. 
 #The data frame for making the Triangle plot has the three measures of diversity, route (stress), and time (scale). 
-raw2 = subset(raw, stress==c(0,0.8))
-ggtern(raw2, aes(x=Richness, y=Hshannon, z=Hsimpson, group=scale, color=removal)) +
-  geom_point(aes(shape=stress), size=4, alpha=0.5) +
-  tern_limits(T=.4,L=0.95,R=0.4) +
+raw2 = subset(raw, stress==c(0,0.5) & removal=="random" & scale==25)
+ggtern(raw2, aes(x=Richness, y=Hshannon, z=Hsimpson, group=scale, color=stress)) +
+#  geom_point(aes(shape=stress), size=4, alpha=0.5) +
+  geom_point(alpha=0.5) +
+  tern_limits(T=.7,L=0.95,R=0.7) +
   theme_bw(base_size = 16) + 
   scale_color_brewer(type = "qual",palette = 6)
 

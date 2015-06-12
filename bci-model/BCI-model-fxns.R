@@ -6,20 +6,16 @@
 #------------------------------- Functions for sampling and manipulating BCI dataset
 count.fn = function(size,nxcell,nycell,x,y){
   # 1. count the no of points (trees) in a cell
-  
   # Divide the plot into a grid system with cell size = size
   npt=numeric()           # no of points in each cell
   z=numeric()             # presence in each cell
   
-  
   ncell=0                 # total no of cells
-  
   xlo=-size
   
   for (i in 1:nxcell){
     xlo=xlo+size
     xup=xlo+size
-    
     ylo=-size
     
     for (j in 1:nycell){
@@ -27,11 +23,9 @@ count.fn = function(size,nxcell,nycell,x,y){
       yup=ylo+size
       
       ncell=ncell+1
-      
       npt[ncell]=length(x[(x>xlo&x<=xup)&(y>ylo&y<=yup)])
     }
   }
-  
   return(npt)
 }
 
@@ -45,7 +39,6 @@ matrix.fn = function(z) {
   
   for(i in 2:norow){
     for(j in 2:nocol){
-      
       x[i,j]=z[i-1,j-1]
     }
   }
@@ -54,11 +47,11 @@ matrix.fn = function(z) {
 
 
 plot.figure.r = function (data1, data2, cc) {
-  #Plots FILL IN THE BLANK
+  # Plots the proportion of species occupancy before disturbance (p) vs. the proportion of species lost
+  # after c% abundance reduction (pc)
   p = data1$occup/5e+05
   pc = data2$occup/5e+05
-  plot(p, pc, xlab = "", ylab = "", cex = 0.7, ylim = c(0, 
-                                                        1), xlim = c(0, 1))
+  plot(p, pc, xlab = "", ylab = "", cex = 0.7, ylim = c(0, 1), xlim = c(0, 1))
   curve(1 - (1 - x)^(1 - cc), add = T, col = "red", lwd = 1)
   curve((1 - cc) * x, add = T, col = "blue", lwd = 1)
 }
@@ -70,8 +63,7 @@ plot.figure3.r = function (data1, data2, data3, cc) {
   pc.rand = data2$occup/5e+05
   pc.syst = data3$occup/5e+05
   pc = (pc.rand + pc.syst)/2
-  plot(p, pc, xlab = "", ylab = "", cex = 0.7, ylim = c(0, 
-                                                        1), xlim = c(0, 1))
+  plot(p, pc, xlab = "", ylab = "", cex = 0.7, ylim = c(0, 1), xlim = c(0, 1))
   curve(1 - (1 - x)^(1 - cc), add = T, col = "red", lwd = 1)
   curve((1 - cc) * x, add = T, col = "blue", lwd = 1)
 }
@@ -85,8 +77,7 @@ plot.r = function (data1, data2, data3, cc) {
   pc.mean = (pc + pc2)/2
   prd = 1 - (1 - pobs)^(1 - cc)
   print(cor(pc.mean, prd))
-  plot(pobs, pc.mean, xlim = c(0, 1), ylim = c(0, 1), xlab = "", 
-       ylab = "", cex = 0.8)
+  plot(pobs, pc.mean, xlim = c(0, 1), ylim = c(0, 1), xlab = "", ylab = "", cex = 0.8)
   curve(1 - (1 - x)^(1 - cc), col = "red", add = T)
   curve((1 - cc) * x, col = "blue", add = T)
 }
@@ -104,15 +95,13 @@ plotxy.fn = function(x,y,xmax,ymax){
 
 
 presence.fn = function(size,nxcell,nycell,x,y,abund,xmax,ymax){
-  # convert cell count into presencen/absence data.
+  # convert cell count into presence/absence data.
   
   xx=seq(0,xmax,len=nxcell+1)
   yy=seq(0,ymax,len=nycell+1)
-  
   npt=count.fn(size,nxcell,nycell,x,y)  	# call function count.fn for observed pattern
   
   z=ifelse(npt>0,1,0)				# convert abundance npt into presence/absence
-  
   noccup=sum(z)
   
   #  z=matrix(z,ncol=nxcell)
@@ -122,12 +111,8 @@ presence.fn = function(size,nxcell,nycell,x,y,abund,xmax,ymax){
   #  image(xx,yy,t(z),breaks=c(0,0.5,1),col=c("white","blue"),xlab="",ylab="",add=T)	# map presence/absence map
   image(xx,yy,t(npt),col=topo.colors(12),xlab="",ylab="",add=T)				# map the number of trees (tree count)
   
-  for (i in 1:(nxcell+1)){
-    lines(c(xx[i],xx[i]),c(0,ymax),col=2)
-  }
-  for (i in 1:(nycell+1)){
-    lines(c(0,xmax),c(yy[i],yy[i]),col=2) 
-  }
+  for (i in 1:(nxcell+1)){ lines(c(xx[i],xx[i]),c(0,ymax),col=2) }
+  for (i in 1:(nycell+1)){ lines(c(0,xmax),c(yy[i],yy[i]),col=2) }
   return(list(npt=as.vector(npt),noccup=noccup))
 }
 
@@ -144,11 +129,9 @@ reduce.fn = function(xy.dat,cc){
     x=runif(1,0,1000)
     y=runif(1,0,500)
   }
-  
   else{
     ntree=round((1-cc)*abund)  	# reduce cc number of trees. This is opposite to "reduce2.fn"
     iseq=sample(1:abund,ntree)		# randomly sample ntree from sequence 1:abund
-    
     x=xy.dat$x[iseq]
     y=xy.dat$y[iseq]
   }
@@ -158,9 +141,6 @@ reduce.fn = function(xy.dat,cc){
 
 reduce2.fn = function(xy.dat,cc){
   # aggregated removal of c proportion of trees
-  # c=0.8 (critically endangered)
-  # c=0.5 (endangered)
-  # c=0.2 (vulnerable)
   
   abund=length(xy.dat$x)
   
@@ -168,17 +148,12 @@ reduce2.fn = function(xy.dat,cc){
     x=runif(1,0,1000)
     y=runif(1,0,500)
   }
-  
   else{
     x=xy.dat$x
-    
     norder=order(x)
-    
     xy.dat=xy.dat[norder,]  		#sort xy.dat according to x-axis
-    
     ntree=round(cc*abund)			# reduce cc number of trees
     iseq=(ntree+1):abund			# retain those trees with x-axis larger than the n-th tree.
-    
     xy.dat=xy.dat[iseq,]			# retain both x and y axes
     x=xy.dat$x
     y=xy.dat$y
@@ -186,12 +161,11 @@ reduce2.fn = function(xy.dat,cc){
   return(data.frame(x=x,y=y))
 }
 
-reducerare.fn = function(xy.dat, cc, Nmin){
-  #FIXME: ISN'T WORKING RIGHT. CASES WHERE ABUNDANCE INCREASES?
+reducerare.fn = function(xy.dat, cc, Nmin, theta){
+  #FIXME: ISN'T WORKING RIGHT. CASES WHERE ABUNDANCE INCREASES? WHAT ARE RULES FOR DEFINING THETA?
   # biased removal of c proportion of trees, reducing RARE species more
-  # c=0.8 (critically endangered)
-  # c=0.5 (endangered)
-  # c=0.2 (vulnerable)
+  # theta is a parameter controlling for the degree of abundance reduction (>= 0)
+  # Nmin is the abundance of the least abundant species
   
   abund=length(xy.dat$x)
   
@@ -199,24 +173,21 @@ reducerare.fn = function(xy.dat, cc, Nmin){
     x=runif(1,0,1000)
     y=runif(1,0,500)
   }
-  
   else{
-    cc.mod = cc * (Nmin/abund)  #TODO: CHECK THAT THIS IS CORRECT, exp needed?
+    cc.mod = cc * ((Nmin/abund)^theta)  #TODO: CHECK THAT THIS IS CORRECT
     ntree=round((1-cc.mod)*abund)    # reduce cc number of trees, where rare species are more affected
     iseq=sample(1:abund,ntree)		# randomly sample ntree from sequence 1:abund
-    
     x=xy.dat$x[iseq]
     y=xy.dat$y[iseq]
   }
   return(data.frame(x=x,y=y))
 }
 
-reducecommon.fn = function(xy.dat,cc, Nmax){
+reducecommon.fn = function(xy.dat,cc, Nmax, theta){
   #FIXME: ISN'T WORKING RIGHT. CASES WHERE ABUNDANCE INCREASES?
   # biased removal of c proportion of trees, reducing RARE species more
-  # c=0.8 (critically endangered)
-  # c=0.5 (endangered)
-  # c=0.2 (vulnerable)
+  # theta is a parameter controlling for the degree of abundance reduction (>= 0)
+  # Nmax is the abundance of the most abundant species
   
   abund=length(xy.dat$x)
   
@@ -224,23 +195,21 @@ reducecommon.fn = function(xy.dat,cc, Nmax){
     x=runif(1,0,1000)
     y=runif(1,0,500)
   }
-  
   else{
-    cc.mod = cc * (abund/Nmax)  #TODO: CHECK THAT THIS IS CORRECT, exp needed?
+    cc.mod = cc * ((abund/Nmax)^theta)  #TODO: CHECK THAT THIS IS CORRECT. RULES FOR DEFINING THETA?
     ntree=round((1-cc.mod)*abund)    # reduce cc number of trees, where rare species are more affected
     iseq=sample(1:abund,ntree)  	# randomly sample ntree from sequence 1:abund
-    
     x=xy.dat$x[iseq]
     y=xy.dat$y[iseq]
   }
   return(data.frame(x=x,y=y))
 }
 
-# function to finish reduce step in gridplot.main.R, returns the ntree dataframe
-reduced.ntree = function(i, xy0.dat, ntree.dat){
+
+reduced.ntree = function(i, xy0.dat, ntree.dat, abund, xmax, ymax, nxcell, nycell){
+  # function to finish reduce step in gridplot.main.R, returns the ntree dataframe
   x0=xy0.dat$x
   y0=xy0.dat$y
-  
   abund[i]=length(x0)
   
   #plot the data for the species after reduction
@@ -248,9 +217,10 @@ reduced.ntree = function(i, xy0.dat, ntree.dat){
   
   # call program presence.fn which converts the points into presence/absence data
   zz=presence.fn(size,nxcell,nycell,x0,y0,abund[i],xmax,ymax)
-  
-  noccup[i]=zz$noccup  	# no of occupied cells  #TODO: NEED THIS FOR PLOTTING SARS?
-  ntree.dat=data.frame(ntree.dat,ntree=zz$npt)
+
+  ntree.dat$noccup[i]=zz$noccup  	# no of occupied cells
+  ntree.dat$ntree=data.frame(ntree.dat$ntree,ntree=zz$npt)
+  ntree.dat$abund[i]=sum(zz$npt)
   
   return(ntree.dat)
 }

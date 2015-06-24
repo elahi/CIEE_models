@@ -18,7 +18,8 @@ gridplot.main = function(ctfs.dat,size,cc,plotsize=c(1000,500)) {
   # size   - lattice size in meters, that is scale
   # cc - reduction of population size
   # this is main program for reading species x, y coordinates for each species
-    
+  
+  abund=numeric()
   sp=ctfs.dat$sp
   splist=unique(sp)
   nsp=length(splist)		# no of species

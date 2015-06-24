@@ -34,7 +34,7 @@ source('divmetrics.main.R')
 
 # Model BCI plots with different levels of disturbance, where disturbance is random removal of individual trees
 # set parameters
-size = c(25,100) #main plots to focus on 25 and 100, could also include 10 and 50
+size = c(25, 100) #main plots to focus on 25 and 100, could also include 10 and 50
 cc = c(0, 0.3, 0.5, 0.8) #main plots to focus on 0.5 and 0.8
 
 for (s in 1:length(size)){
@@ -51,7 +51,7 @@ for (s in 1:length(size)){
     
     #plot effect of abundance reduction on species
     #FIXME: Ideally, this should be an apply statement that inputs from the scenarios, and labels each panel
-    SAR.occup.r(ntree.dat1$rand$abund, ntree.dat1$rand$noccup) #TODO
+    sar.occup.r(ntree.dat1$rand$abund, ntree.dat1$rand$noccup) #TODO
     
     # calculate diversity metrics for the three scenarios
     scale.rand = divmetrics.main(ntree.dat1[[1]][1], ntree.dat2[[1]][1], ntree.dat3[[1]][1], ntree.dat4[[1]][1], size[s])
